@@ -1,0 +1,115 @@
+﻿@model IEnumerable<IEL.Models.Estudante>
+
+@{
+    ViewData["Title"] = "Lista de Estudantes";
+}
+
+<div class="container mt-3">
+    <div class="row">
+        <div class="col-md-6">
+            <h1>@ViewData["Title"]</h1>
+        </div>
+        <div class="col-md-6 text-end">
+            <a href="@Url.Action("Create", "Estudante")" class="btn btn-primary">Novo Estudante</a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <form method="post" id="searchForm">
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" placeholder="Pesquisar por nome..." id="searchText">
+                    <button class="btn btn-outline-secondary" type="submit" id="searchButton">Buscar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>CPF</th>
+                        <th>Estado</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var estudante in Model)
+                        {
+                            <tr>
+                                <td>@estudante.Nome</td>
+                                <td>@estudante.CPF</td>
+                                <td>@estudante.Estado</td>
+                                <td>
+                                    <button onclick="deleteStudent(@estudante.Id)" class="btn btn-danger">Delete</button>
+                                </td>
+
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5">No estudantes found</td>
+                        </tr>
+                    }
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        function deleteStudent(id) {
+            if (confirm('Are you sure you want to delete this student?')) {
+                $.ajax({
+                    url: '/Estudante/DeleteConfirmed',
+                    type: 'POST',
+                    headers: { "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val() },
+                    data: { 'id': id },  // Changed from JSON.stringify
+                    success: function (response) {
+                        location.reload();
+                    },
+                    error: function (err) {
+                        console.log(err);
+                        alert('Error: ' + err.responseText || err.statusText);
+                    }
+                });
+
+            }
+        }
+    </script>
+    <script>
+        // Existing deleteStudent function
+
+        $(document).ready(function () {
+            $("#searchButton").click(function (e) {
+                e.preventDefault();
+                var searchText = $("#searchText").val();
+                $.ajax({
+                    url: '/Estudante/Index',
+                    headers: { "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val() },
+                    type: 'POST',
+                    data: { searchText: searchText },
+                    success: function (response) {
+                        // Replace table content
+                        $(".table").html(response);
+                    },
+                    error: function (err) {
+                        console.log(err);  // log the entire error object
+                        alert('Error: ' + err.responseText || err.statusText);  // display a part of the error
+                    }
+
+                });
+            });
+        });
+
+    </script>
+}
+

@@ -1,0 +1,116 @@
+﻿@model IEL.Models.Estudante
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1>Create New Student</h1>
+
+<div class="container">
+    <form asp-action="Create">
+        <div class="form-group">
+            <label for="Nome">Nome:</label>
+            <input type="text" class="form-control" id="Nome" name="Nome" asp-for="Nome" required>
+        </div>
+        <div class="form-group">
+            <label for="CPF">CPF:</label>
+            <input type="text" class="form-control" id="CPF" name="CPF" asp-for="CPF" required>
+        </div>
+        <div class="form-group">
+            <label for="Endereco">Endereço:</label>
+            <input type="text" class="form-control" id="Endereco" name="Endereco" asp-for="Endereco" required>
+        </div>
+        <div class="form-group">
+            <label for="Estado">Estado:</label>
+            <select class="form-control" id="Estado" name="Estado" asp-for="Estado">
+                <option value="" disabled selected>Select Estado</option>
+                @foreach (EstadoEn estado in Enum.GetValues(typeof(EstadoEn)))
+                {
+                    <option value="@GetDescription(estado)">@GetDescription(estado)</option>
+                }
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="Cidade">Cidade:</label>
+            <select class="form-control" id="Cidade" name="Cidade" asp-for="Cidade">
+                <!-- Opções de cidades aqui -->
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="Instituicao">Instituição de Ensino:</label>
+            <select class="form-control" id="Instituicao" name="Instituicao" asp-for="Instituicao">
+                @foreach (InstituicaoEnsino instituicao in Enum.GetValues(typeof(InstituicaoEnsino)))
+                {
+                    <option value="@instituicao">@instituicao</option>
+                }
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="NomeDoCurso">Nome do Curso:</label>
+            <input type="text" class="form-control" id="NomeDoCurso" name="NomeDoCurso" asp-for="NomeDoCurso" required>
+        </div>
+        <div class="form-group">
+            <label for="DataDeConclusao">Data de Conclusão:</label>
+            <input type="date" class="form-control" id="DataDeConclusao" name="DataDeConclusao" asp-for="DataDeConclusao" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Create</button>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const estadoSelect = document.getElementById("Estado");
+            const cidadeSelect = document.getElementById("Cidade");
+            let estadoIdMap = {};
+
+            // Load states when the page loads
+            fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados')
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(estado => {
+                        const option = document.createElement("option");
+                        option.value = estado.nome;
+                        option.text = estado.nome;
+                        estadoSelect.appendChild(option);
+                        estadoIdMap[estado.nome] = estado.id;
+                    });
+                })
+                .catch(error => console.error('Fetch Error:', error));
+
+            // Update cities when a state is selected
+            estadoSelect.addEventListener("change", function () {
+                cidadeSelect.innerHTML = "";
+                const selectedEstadoName = estadoSelect.options[estadoSelect.selectedIndex].text;
+                const selectedEstadoId = estadoIdMap[selectedEstadoName];
+
+
+                fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${selectedEstadoId}/municipios`)
+                    .then(response => response.json())
+                    .then(data => {
+                        data.forEach(cidade => {
+                            const option = document.createElement("option");
+                            option.value = cidade.id;
+                            option.text = cidade.nome;
+                            cidadeSelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => console.error('Fetch Error:', error));
+            });
+        });
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#CPF').mask('000.000.000-00', { reverse: true });
+        });
+    </script>
+}
+@functions {
+    public string GetDescription(Enum value)
+    {
+        return EnumUtil.GetDescription(value);
+    }
+}

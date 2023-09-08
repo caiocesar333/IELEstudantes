@@ -1,0 +1,37 @@
+﻿@model IEnumerable<IEL.Models.Estudante>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Nome</th>
+            <th>CPF</th>
+            <th>Estado</th>
+            <th>Cidade</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.Any())
+        {
+            foreach (var estudante in Model)
+            {
+                <tr>
+                    <td>@estudante.Nome</td>
+                    <td>@estudante.CPF</td>
+                    <td>@estudante.Estado</td>
+                    <td>@estudante.Cidade</td>
+                    <td>
+                        <button onclick="deleteStudent(@estudante.Id)" class="btn btn-danger">Delete</button>
+                    </td>
+
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="5">No estudantes found</td>
+            </tr>
+        }
+    </tbody>
+
+</table>
